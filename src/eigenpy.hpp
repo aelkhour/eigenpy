@@ -38,18 +38,21 @@ namespace eigenpy
   class exception : public std::exception
   {
   public:
+    exception() : message() {}
     exception(std::string msg) : message(msg) {}
     const char *what() const throw()
     {
-      return this->message.c_str();
+      return this->getMessage().c_str();
     }
     ~exception() throw() {}
-    std::string getMessage() { return message; }
+    virtual const std::string & getMessage() const { return message; }
+    std::string copyMessage() const { return getMessage(); }
     static void registerException();
 
   private:
     static void translateException( exception const & e );
     static PyObject * pyType;
+  protected:
     std::string message;
    };
 
@@ -294,7 +297,7 @@ namespace eigenpy
   {
     pyType = boost::python::class_<eigenpy::exception>
       ("exception",boost::python::init<std::string>())
-      .add_property("message", &eigenpy::exception::getMessage)
+      .add_property("message", &eigenpy::exception::copyMessage)
       .ptr();
 
     boost::python::register_exception_translator<eigenpy::exception>
